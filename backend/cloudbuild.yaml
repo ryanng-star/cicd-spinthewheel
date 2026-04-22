@@ -1,20 +1,23 @@
 steps:
-  # Step 1: Build the Docker Image (The Engine)
+  # Step 1: Build the Docker Image
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'backend' # <--- Walk into the backend folder first!
     args: 
       - 'build'
       - '-t'
       - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-backend'
       - '.'
 
-  # Step 2: Push the Image to the Warehouse (Artifact Registry)
+  # Step 2: Push to the Warehouse
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'backend' # <--- Run this from the backend folder
     args: 
       - 'push'
       - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-backend'
 
-  # Step 3: Deploy to Cloud Run (With Admin Privileges)
+  # Step 3: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    dir: 'backend' # <--- Run this from the backend folder
     entrypoint: gcloud
     args: 
       - 'run'
@@ -22,4 +25,4 @@ steps:
       - 'spinthewheel-backend-service'
       - '--image=asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-backend'
       - '--region=asia-southeast1'
-      - '--allow-unauthenticated' # <--- The Robot creates the room and unlocks the door to the public!
+      - '--allow-unauthenticated'
