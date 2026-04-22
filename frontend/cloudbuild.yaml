@@ -1,0 +1,26 @@
+steps:
+  # Step 1: Build the Nginx Engine
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-frontend'
+      - '.'
+
+  # Step 2: Push to the Warehouse
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'push'
+      - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-frontend'
+
+  # Step 3: Deploy to Cloud Run (With Admin privileges!)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: 
+      - 'run'
+      - 'deploy'
+      - 'spinthewheel-frontend-service'
+      - '--image=asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-frontend'
+      - '--region=asia-southeast1'
+      - '--port=80'
+      - '--allow-unauthenticated'
