@@ -1,6 +1,7 @@
 steps:
   # Step 1: Build the Nginx Engine
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'frontend' # <--- Walk into the frontend folder first!
     args: 
       - 'build'
       - '-t'
@@ -9,12 +10,14 @@ steps:
 
   # Step 2: Push to the Warehouse
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'frontend'
     args: 
       - 'push'
       - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/my-spinthewheel-repo/spinthewheel-frontend'
 
   # Step 3: Deploy to Cloud Run (With Admin privileges!)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    dir: 'frontend'
     entrypoint: gcloud
     args: 
       - 'run'
