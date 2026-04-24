@@ -3,70 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's For Dinner?</title>
+    <title>🎡 What's For Dinner?</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            background-color: #1e272e;
+            color: #d2dae2;
             text-align: center;
-            padding: 50px 20px;
-            max-width: 600px;
-            margin: 0 auto;
+            padding: 30px 10px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        h1 { color: #2c3e50; }
-        .input-group { margin: 20px 0; }
+        h1 { color: #0fb9b1; margin-bottom: 5px; }
+        p { color: #808e9b; margin-top: 0; margin-bottom: 25px; }
+        
+        .controls {
+            background: #2d3436;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+        
         input[type="text"] {
-            padding: 10px;
-            width: 60%;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        button {
-            padding: 10px 20px;
+            padding: 12px;
+            width: 65%;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
+            font-size: 16px;
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: transform 0.1s, background 0.3s;
         }
-        .btn-add { background-color: #27ae60; color: white; }
-        .btn-add:hover { background-color: #219150; }
-        .btn-spin { background-color: #e67e22; color: white; font-size: 20px; padding: 15px 40px; margin: 20px 0; width: 100%;}
-        .btn-spin:hover { background-color: #d35400; }
-        .btn-share { background-color: #3498db; color: white; margin-top: 20px;}
-        .btn-share:hover { background-color: #2980b9; }
+        button:active { transform: scale(0.95); }
         
-        ul { list-style-type: none; padding: 0; }
-        li {
-            background: #fff;
-            margin: 5px auto;
-            padding: 10px;
-            width: 80%;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .btn-add { background-color: #0fb9b1; color: white; width: 25%; }
+        .btn-add:hover { background-color: #0c9690; }
+        
+        .btn-share { background-color: #3867d6; color: white; margin-top: 15px; width: 100%;}
+        .btn-share:hover { background-color: #2b4ebd; }
+        
+        .btn-spin { 
+            background-color: #fa8231; 
+            color: white; 
+            font-size: 22px; 
+            padding: 15px 40px; 
+            margin: 20px 0; 
+            border-radius: 50px;
+            box-shadow: 0 4px 0 #d35400;
         }
+        .btn-spin:hover { background-color: #fd9644; }
+        .btn-spin:active { box-shadow: 0 0 0 #d35400; transform: translateY(4px); }
+
+        .wheel-container {
+            position: relative;
+            margin: 20px auto;
+            width: 350px;
+            height: 350px;
+        }
+
+        /* The Pointer */
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid #eb3b5a;
+            z-index: 10;
+            filter: drop-shadow(0px 3px 2px rgba(0,0,0,0.5));
+        }
+
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            background: #2d3436;
+        }
+
         #result-box {
-            margin-top: 30px;
-            padding: 20px;
-            font-size: 24px;
+            margin-top: 10px;
+            font-size: 28px;
             font-weight: bold;
-            background: #fff;
-            border: 3px dashed #e67e22;
-            border-radius: 8px;
-            min-height: 35px;
+            color: #fed330;
+            min-height: 40px;
         }
+
         #share-container {
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 15px;
-            background: #e8f4f8;
+            background: #2d3436;
             border-radius: 8px;
             display: none;
             word-wrap: break-word;
+            max-width: 500px;
         }
-        #share-link { color: #2980b9; font-weight: bold; }
+        #share-link { color: #4b7bec; font-weight: bold; text-decoration: none; }
+        #share-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -74,26 +122,26 @@
     <h1>🎡 What's For Dinner?</h1>
     <p>Add your choices, spin the wheel, and let fate decide.</p>
 
-    <div class="input-group">
-        <input type="text" id="restaurant-input" placeholder="e.g., McDonald's, Sushi...">
-        <button class="btn-add" onclick="addRestaurant()">Add</button>
-    </div>
-
-    <ul id="restaurant-list"></ul>
-
-    <button class="btn-spin" onclick="spinWheel()">🎲 SPIN THE WHEEL 🎲</button>
-    
-    <div id="result-box">
-        <span id="winner-text">Waiting to spin...</span>
-    </div>
-
-    <div>
+    <div class="controls">
+        <div>
+            <input type="text" id="restaurant-input" placeholder="e.g., Pizza, Sushi...">
+            <button class="btn-add" onclick="addRestaurant()">Add</button>
+        </div>
         <button class="btn-share" onclick="shareWheel()">🔗 Get Shareable Link</button>
+        
+        <div id="share-container">
+            <span style="font-size: 14px; color: #a5b1c2;">Send this link to friends:</span><br>
+            <a href="#" id="share-link" target="_blank"></a>
+        </div>
     </div>
-    <div id="share-container">
-        <p>Copy this link and send it to your friends:</p>
-        <a href="#" id="share-link" target="_blank"></a>
+
+    <div class="wheel-container">
+        <div class="wheel-pointer"></div>
+        <canvas id="wheelCanvas" width="350" height="350"></canvas>
     </div>
+
+    <button class="btn-spin" onclick="spinWheel()">🎲 SPIN 🎲</button>
+    <div id="result-box">Waiting for entries...</div>
 
     <script>
         // ==========================================
@@ -101,28 +149,39 @@
         // ==========================================
         const BACKEND_URL = "https://spinthewheel-backend-service-695346106108.asia-southeast1.run.app"; 
 
-        // Our local array (No database needed!)
         let restaurants = [];
+        
+        // Wheel styling colors
+        const colors = ["#fc5c65", "#fd9644", "#fed330", "#26de81", "#2bcbba", "#45aaf2", "#4b7bec", "#a55eea", "#778ca3"];
+
+        // Canvas Setup
+        const canvas = document.getElementById("wheelCanvas");
+        const ctx = canvas.getContext("2d");
+        const radius = canvas.width / 2;
+
+        // Physics Variables
+        let currentAngle = 0;
+        let spinVelocity = 0;
+        let isSpinning = false;
+        let animationFrame;
 
         // Elements
         const inputEl = document.getElementById('restaurant-input');
-        const listEl = document.getElementById('restaurant-list');
-        const winnerText = document.getElementById('winner-text');
+        const winnerText = document.getElementById('result-box');
         const shareContainer = document.getElementById('share-container');
         const shareLinkEl = document.getElementById('share-link');
 
         // ==========================================
-        // 1. ON PAGE LOAD (Check for Shared Link)
+        // 1. PAGE LOAD (Check for Shared Link)
         // ==========================================
         window.onload = async () => {
-            // Look at the URL in the browser (e.g., mysite.com/?wheel=WyJL...)
+            drawWheel(); // Draw empty wheel
             const params = new URLSearchParams(window.location.search);
             const token = params.get('wheel');
 
             if (token) {
                 winnerText.innerText = "Loading shared wheel...";
                 try {
-                    // Ask the backend to translate the gibberish back into a list
                     const response = await fetch(`${BACKEND_URL}/api/decode`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -130,81 +189,145 @@
                     });
                     
                     const data = await response.json();
-                    
-                    if (data.restaurants) {
+                    if (data.restaurants && data.restaurants.length > 0) {
                         restaurants = data.restaurants;
-                        updateUI();
-                        winnerText.innerText = "Shared wheel loaded! Ready to spin.";
+                        winnerText.innerText = "Ready to spin!";
+                        drawWheel();
                     } else {
-                        winnerText.innerText = "Error: Invalid link.";
+                        winnerText.innerText = "Invalid link.";
                     }
                 } catch (error) {
-                    winnerText.innerText = "Network error loading shared wheel.";
+                    winnerText.innerText = "Error loading wheel.";
                 }
             }
         };
 
         // ==========================================
-        // 2. LOCAL ADDING LOGIC (No backend needed)
+        // 2. ADD RESTAURANTS
         // ==========================================
         function addRestaurant() {
             const name = inputEl.value.trim();
             if (name !== "") {
                 restaurants.push(name);
-                inputEl.value = ""; // Clear input
-                updateUI();
+                inputEl.value = ""; 
+                winnerText.innerText = "Ready to spin!";
+                drawWheel();
             }
         }
 
-        function updateUI() {
-            listEl.innerHTML = "";
-            restaurants.forEach(name => {
-                const li = document.createElement('li');
-                li.innerText = name;
-                listEl.appendChild(li);
-            });
+        // Allow pressing "Enter" to add
+        inputEl.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") addRestaurant();
+        });
+
+        // ==========================================
+        // 3. DRAW THE WHEEL
+        // ==========================================
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (restaurants.length === 0) {
+                ctx.beginPath();
+                ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = "#636e72";
+                ctx.fill();
+                ctx.fillStyle = "#dfe6e9";
+                ctx.font = "bold 20px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Add food to begin!", radius, radius);
+                return;
+            }
+
+            const arcSize = (2 * Math.PI) / restaurants.length;
+
+            for (let i = 0; i < restaurants.length; i++) {
+                const angle = currentAngle + i * arcSize;
+                
+                // Draw Slice
+                ctx.beginPath();
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius, angle, angle + arcSize);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Text
+                ctx.save();
+                ctx.translate(radius, radius);
+                ctx.rotate(angle + arcSize / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 18px Arial";
+                // Max character limit for display to keep it pretty
+                let text = restaurants[i];
+                if (text.length > 15) text = text.substring(0, 15) + "...";
+                ctx.fillText(text, radius - 20, 6);
+                ctx.restore();
+            }
         }
 
         // ==========================================
-        // 3. SPIN LOGIC (Local JavaScript)
+        // 4. SPIN LOGIC (Physics)
         // ==========================================
         function spinWheel() {
             if (restaurants.length === 0) {
-                alert("Please add some restaurants first!");
+                winnerText.innerText = "Add options first!";
                 return;
             }
+            if (isSpinning) return; // Prevent double clicking
 
-            // Quick fake "spinning" animation
-            let spins = 0;
-            const spinInterval = setInterval(() => {
-                const randomTemp = restaurants[Math.floor(Math.random() * restaurants.length)];
-                winnerText.innerText = randomTemp;
-                spins++;
+            isSpinning = true;
+            winnerText.innerText = "Spinning...";
+            
+            // Randomize starting velocity for unpredictability
+            spinVelocity = Math.random() * 0.2 + 0.4; 
+            animateSpin();
+        }
 
-                if (spins > 15) {
-                    clearInterval(spinInterval);
-                    // Final Winner
-                    const winner = restaurants[Math.floor(Math.random() * restaurants.length)];
-                    winnerText.innerText = `🎉 ${winner} 🎉`;
-                    winnerText.style.color = "#e67e22";
-                }
-            }, 100); // changes text every 100ms
+        function animateSpin() {
+            currentAngle += spinVelocity;
+            
+            // Apply friction to slow it down
+            spinVelocity *= 0.985; 
+
+            drawWheel();
+
+            if (spinVelocity > 0.002) {
+                animationFrame = requestAnimationFrame(animateSpin);
+            } else {
+                isSpinning = false;
+                cancelAnimationFrame(animationFrame);
+                determineWinner();
+            }
+        }
+
+        function determineWinner() {
+            // The pointer is at the very top (270 degrees or 1.5 * PI)
+            // We calculate which slice is currently under that angle
+            const arcSize = (2 * Math.PI) / restaurants.length;
+            
+            // Normalize current angle
+            let normalizedAngle = currentAngle % (2 * Math.PI);
+            
+            // Pointer is at the top (which is 270 degrees in canvas math, or 1.5 * PI)
+            // We reverse calculate the slice offset
+            let pointerAngle = (1.5 * Math.PI - normalizedAngle + (2 * Math.PI)) % (2 * Math.PI);
+            let winningIndex = Math.floor(pointerAngle / arcSize);
+
+            const winner = restaurants[winningIndex];
+            winnerText.innerText = `🎉 ${winner} 🎉`;
         }
 
         // ==========================================
-        // 4. SHARE LOGIC (Talk to the Backend)
+        // 5. SHARE LOGIC (Backend Talk)
         // ==========================================
         async function shareWheel() {
-            if (restaurants.length === 0) {
-                alert("Add some restaurants before sharing!");
-                return;
-            }
+            if (restaurants.length === 0) return;
 
             try {
                 shareContainer.style.display = "block";
                 shareLinkEl.innerText = "Generating link...";
 
-                // Send the list to the backend to be encoded
                 const response = await fetch(`${BACKEND_URL}/api/encode`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -214,18 +337,15 @@
                 const data = await response.json();
 
                 if (data.token) {
-                    // Create the final URL
                     const currentUrl = window.location.origin + window.location.pathname;
                     const finalLink = `${currentUrl}?wheel=${data.token}`;
-                    
-                    // Display it to the user
                     shareLinkEl.href = finalLink;
                     shareLinkEl.innerText = finalLink;
                 } else {
                     shareLinkEl.innerText = "Error generating link.";
                 }
             } catch (error) {
-                shareLinkEl.innerText = "Backend connection failed. Are you sure your URL is correct?";
+                shareLinkEl.innerText = "Backend connection failed.";
             }
         }
     </script>
