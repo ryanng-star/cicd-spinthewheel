@@ -3,235 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spin The Wheel</title>
+    <title>What's For Dinner?</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            margin-top: 30px; 
-            background-color: #f8f9fa; 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
             color: #333;
+            text-align: center;
+            padding: 50px 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
-        
-        /* Layout */
-        .container { max-width: 600px; margin: 0 auto; }
-        
-        /* Wheel & Pointer Styles */
-        .pointer { font-size: 40px; margin-bottom: -20px; z-index: 10; position: relative; }
-        canvas { 
-            border-radius: 50%; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.1, 1); /* Smooth spinning effect */
-            background-color: #eee;
+        h1 { color: #2c3e50; }
+        .input-group { margin: 20px 0; }
+        input[type="text"] {
+            padding: 10px;
+            width: 60%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
         }
-
-        /* Buttons & Inputs */
-        button { 
-            padding: 12px 25px; 
-            font-size: 18px; 
-            cursor: pointer; 
-            background: #4285F4; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            margin: 10px;
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
+            transition: background 0.3s;
         }
-        button:hover { background: #3367D6; }
+        .btn-add { background-color: #27ae60; color: white; }
+        .btn-add:hover { background-color: #219150; }
+        .btn-spin { background-color: #e67e22; color: white; font-size: 20px; padding: 15px 40px; margin: 20px 0; width: 100%;}
+        .btn-spin:hover { background-color: #d35400; }
+        .btn-share { background-color: #3498db; color: white; margin-top: 20px;}
+        .btn-share:hover { background-color: #2980b9; }
         
-        .add-section { 
-            margin-top: 40px; 
-            padding: 20px; 
-            background: white; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        ul { list-style-type: none; padding: 0; }
+        li {
+            background: #fff;
+            margin: 5px auto;
+            padding: 10px;
+            width: 80%;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        input[type="text"] { 
-            padding: 12px; 
-            font-size: 16px; 
-            width: 60%; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
+        #result-box {
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            background: #fff;
+            border: 3px dashed #e67e22;
+            border-radius: 8px;
+            min-height: 35px;
         }
-
-        /* Typography */
-        #result { margin-top: 20px; font-size: 24px; font-weight: bold; color: #EA4335; min-height: 30px; }
+        #share-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 8px;
+            display: none;
+            word-wrap: break-word;
+        }
+        #share-link { color: #2980b9; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>What's for Dinner?</h1>
-        
-        <!-- The Pointer and Wheel -->
-        <div class="pointer">👇</div>
-        <canvas id="wheelCanvas" width="350" height="350"></canvas>
-        
-        <br>
-        <!-- The Spin Button -->
-        <button onclick="spinWheel()" id="spinBtn">Spin the Wheel!</button>
-        <div id="result">Connecting to Kitchen...</div>
+    <h1>🎡 What's For Dinner?</h1>
+    <p>Add your choices, spin the wheel, and let fate decide.</p>
 
-        <!-- The Add Restaurant Form -->
-        <div class="add-section">
-            <h3>Add to the Wheel</h3>
-            <input type="text" id="newRestaurantName" placeholder="e.g. Sushi, Pizza, Burgers...">
-            <button onclick="submitNewRestaurant()" style="background: #34A853;">Add</button>
-        </div>
+    <div class="input-group">
+        <input type="text" id="restaurant-input" placeholder="e.g., McDonald's, Sushi...">
+        <button class="btn-add" onclick="addRestaurant()">Add</button>
+    </div>
+
+    <ul id="restaurant-list"></ul>
+
+    <button class="btn-spin" onclick="spinWheel()">🎲 SPIN THE WHEEL 🎲</button>
+    
+    <div id="result-box">
+        <span id="winner-text">Waiting to spin...</span>
+    </div>
+
+    <div>
+        <button class="btn-share" onclick="shareWheel()">🔗 Get Shareable Link</button>
+    </div>
+    <div id="share-container">
+        <p>Copy this link and send it to your friends:</p>
+        <a href="#" id="share-link" target="_blank"></a>
     </div>
 
     <script>
-        // -----------------------------------------------------------------------------
-        // 1. CONFIGURATION
-        // ⚠️ Replace this with your actual Python Backend Cloud Run URL once deployed!
-        // -----------------------------------------------------------------------------
-        const BACKEND_URL = "https://spinthewheel-backend-service-695346106108.asia-southeast1.run.app";
-        
+        // ==========================================
+        // ⚠️ REPLACE THIS WITH YOUR CLOUD RUN URL
+        // ==========================================
+        const BACKEND_URL = "https://spinthewheel-backend-service-695346106108.asia-southeast1.run.app"; 
+
+        // Our local array (No database needed!)
         let restaurants = [];
-        let currentRotation = 0; // Keeps track of spins so it doesn't reset backward
-        const colors = ["#FF5733", "#33FF57", "#3357FF", "#F033FF", "#FFC300", "#00C3FF", "#FF0055", "#00FFC3", "#9933FF", "#FF9933"];
 
-        // Automatically fetch the menu when the page loads
-        window.onload = fetchRestaurants;
+        // Elements
+        const inputEl = document.getElementById('restaurant-input');
+        const listEl = document.getElementById('restaurant-list');
+        const winnerText = document.getElementById('winner-text');
+        const shareContainer = document.getElementById('share-container');
+        const shareLinkEl = document.getElementById('share-link');
 
-        // -----------------------------------------------------------------------------
-        // 2. BACKEND CONNECTIONS (The Fetch API)
-        // -----------------------------------------------------------------------------
-        
-        // GET Request: Pull the list from Firestore
-        async function fetchRestaurants() {
-            try {
-                const response = await fetch(`${BACKEND_URL}/restaurants`);
-                if (!response.ok) throw new Error("Network response was not ok");
-                
-                const data = await response.json();
-                restaurants = data.restaurants || [];
-                
-                if (restaurants.length > 0) {
-                    document.getElementById("result").innerText = "Ready to spin!";
-                    drawWheel();
-                } else {
-                    document.getElementById("result").innerText = "No restaurants found. Add one below!";
-                    drawEmptyWheel();
+        // ==========================================
+        // 1. ON PAGE LOAD (Check for Shared Link)
+        // ==========================================
+        window.onload = async () => {
+            // Look at the URL in the browser (e.g., mysite.com/?wheel=WyJL...)
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('wheel');
+
+            if (token) {
+                winnerText.innerText = "Loading shared wheel...";
+                try {
+                    // Ask the backend to translate the gibberish back into a list
+                    const response = await fetch(`${BACKEND_URL}/api/decode`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: token })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.restaurants) {
+                        restaurants = data.restaurants;
+                        updateUI();
+                        winnerText.innerText = "Shared wheel loaded! Ready to spin.";
+                    } else {
+                        winnerText.innerText = "Error: Invalid link.";
+                    }
+                } catch (error) {
+                    winnerText.innerText = "Network error loading shared wheel.";
                 }
-            } catch (error) {
-                console.error("Fetch Error:", error);
-                document.getElementById("result").innerText = "Error: Cannot reach the backend sad face.";
-                drawEmptyWheel();
+            }
+        };
+
+        // ==========================================
+        // 2. LOCAL ADDING LOGIC (No backend needed)
+        // ==========================================
+        function addRestaurant() {
+            const name = inputEl.value.trim();
+            if (name !== "") {
+                restaurants.push(name);
+                inputEl.value = ""; // Clear input
+                updateUI();
             }
         }
 
-        // POST Request: Send a new restaurant to Firestore
-        async function submitNewRestaurant() {
-            const inputField = document.getElementById("newRestaurantName");
-            const newName = inputField.value.trim();
-            const resultDiv = document.getElementById("result");
-
-            if (!newName) {
-                resultDiv.innerText = "Please type a name first!";
-                return;
-            }
-
-            resultDiv.innerText = "Adding to database...";
-            inputField.value = ""; // Clear the box
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/restaurants`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: newName })
-                });
-
-                if (response.ok) {
-                    resultDiv.innerText = `Successfully added ${newName}!`;
-                    await fetchRestaurants(); // Instantly refresh the wheel with the new data
-                } else {
-                    resultDiv.innerText = "Error: Database rejected the request.";
-                }
-            } catch (error) {
-                console.error("Post Error:", error);
-                resultDiv.innerText = "Error connecting to the backend.";
-            }
+        function updateUI() {
+            listEl.innerHTML = "";
+            restaurants.forEach(name => {
+                const li = document.createElement('li');
+                li.innerText = name;
+                listEl.appendChild(li);
+            });
         }
 
-        // -----------------------------------------------------------------------------
-        // 3. CANVAS DRAWING LOGIC
-        // -----------------------------------------------------------------------------
-        function drawWheel() {
-            const canvas = document.getElementById("wheelCanvas");
-            const ctx = canvas.getContext("2d");
-            const sliceAngle = (2 * Math.PI) / restaurants.length;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawings
-
-            for (let i = 0; i < restaurants.length; i++) {
-                // Draw Slice
-                ctx.beginPath();
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.moveTo(175, 175); // Center of a 350x350 canvas
-                ctx.arc(175, 175, 175, i * sliceAngle, (i + 1) * sliceAngle);
-                ctx.fill();
-                
-                // Draw Text
-                ctx.save();
-                ctx.translate(175, 175);
-                ctx.rotate(i * sliceAngle + sliceAngle / 2);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 16px Arial";
-                // Offset text slightly from the edge
-                ctx.fillText(restaurants[i].name, 160, 5); 
-                ctx.restore();
-            }
-        }
-
-        function drawEmptyWheel() {
-            const canvas = document.getElementById("wheelCanvas");
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.fillStyle = "#ddd";
-            ctx.arc(175, 175, 175, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-
-        // -----------------------------------------------------------------------------
-        // 4. SPINNING ANIMATION LOGIC
-        // -----------------------------------------------------------------------------
+        // ==========================================
+        // 3. SPIN LOGIC (Local JavaScript)
+        // ==========================================
         function spinWheel() {
             if (restaurants.length === 0) {
-                document.getElementById("result").innerText = "Add some restaurants first!";
+                alert("Please add some restaurants first!");
                 return;
             }
-            
-            const canvas = document.getElementById("wheelCanvas");
-            const resultDiv = document.getElementById("result");
-            const btn = document.getElementById("spinBtn");
-            
-            // Disable button while spinning
-            btn.disabled = true;
-            resultDiv.innerText = "Spinning...";
 
-            // Calculate random spin: Minimum 5 full spins + a random degree
-            const extraDegrees = Math.floor(Math.random() * 360);
-            currentRotation += (360 * 5) + extraDegrees; 
-            
-            // Apply CSS transform to spin the canvas
-            canvas.style.transform = `rotate(${currentRotation}deg)`;
+            // Quick fake "spinning" animation
+            let spins = 0;
+            const spinInterval = setInterval(() => {
+                const randomTemp = restaurants[Math.floor(Math.random() * restaurants.length)];
+                winnerText.innerText = randomTemp;
+                spins++;
 
-            // Wait 4 seconds for the CSS transition to finish, then announce winner
-            setTimeout(() => {
-                // Determine the winner mathematically based on final angle
-                const actualDegree = currentRotation % 360;
-                const sliceDegree = 360 / restaurants.length;
-                
-                // We add 270 degrees to offset the fact that our pointer is at the TOP (12 o'clock)
-                const winningIndex = Math.floor(((360 - actualDegree + 270) % 360) / sliceDegree);
-                
-                resultDiv.innerText = `🎉 You are eating at: ${restaurants[winningIndex].name}! 🎉`;
-                btn.disabled = false; // Re-enable button
-            }, 4000); 
+                if (spins > 15) {
+                    clearInterval(spinInterval);
+                    // Final Winner
+                    const winner = restaurants[Math.floor(Math.random() * restaurants.length)];
+                    winnerText.innerText = `🎉 ${winner} 🎉`;
+                    winnerText.style.color = "#e67e22";
+                }
+            }, 100); // changes text every 100ms
+        }
+
+        // ==========================================
+        // 4. SHARE LOGIC (Talk to the Backend)
+        // ==========================================
+        async function shareWheel() {
+            if (restaurants.length === 0) {
+                alert("Add some restaurants before sharing!");
+                return;
+            }
+
+            try {
+                shareContainer.style.display = "block";
+                shareLinkEl.innerText = "Generating link...";
+
+                // Send the list to the backend to be encoded
+                const response = await fetch(`${BACKEND_URL}/api/encode`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ restaurants: restaurants })
+                });
+
+                const data = await response.json();
+
+                if (data.token) {
+                    // Create the final URL
+                    const currentUrl = window.location.origin + window.location.pathname;
+                    const finalLink = `${currentUrl}?wheel=${data.token}`;
+                    
+                    // Display it to the user
+                    shareLinkEl.href = finalLink;
+                    shareLinkEl.innerText = finalLink;
+                } else {
+                    shareLinkEl.innerText = "Error generating link.";
+                }
+            } catch (error) {
+                shareLinkEl.innerText = "Backend connection failed. Are you sure your URL is correct?";
+            }
         }
     </script>
 </body>
